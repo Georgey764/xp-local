@@ -29,6 +29,21 @@
   --color-border: var(--color-neutral-200);
 }
 
+:root {
+  /* 1. Tells iOS Safari to stop trying to darken the page */
+  color-scheme: light !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Re-declare light colors even if the OS is dark */
+    --color-background: oklch(99% 0.005 60);
+    --color-foreground: oklch(20% 0.05 260);
+    background-color: oklch(99% 0.005 60);
+    color: oklch(20% 0.05 260);
+  }
+}
+
 /* Base layer styles */
 @layer base {
   :root {
