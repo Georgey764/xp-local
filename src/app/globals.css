@@ -1,63 +1,85 @@
 @import "tailwindcss";
 
-/* Define theme colors (generates bg-primary, text-accent, etc.) */
 @theme {
-  /* Primary – Electric Violet (CTAs, progress, main actions) */
+  /* --- 1. Static Brand Colors (Shared) --- */
   --color-primary: oklch(64% 0.24 274);
-  --color-primary-600: oklch(58% 0.23 274);
-  --color-primary-700: oklch(50% 0.22 274);
-
-  /* Accent – Neon Lime Glow (badges, streaks, highlights) */
   --color-accent: oklch(88% 0.19 118);
-  --color-accent-600: oklch(80% 0.18 118);
-
-  /* Reward – Golden pop (achievements, +XP, special) */
   --color-reward: oklch(84% 0.17 75);
-  --color-reward-600: oklch(76% 0.16 75);
 
-  /* Neutral scale */
-  --color-neutral-50: oklch(99% 0.005 60);
-  --color-neutral-100: oklch(96% 0.01 60);
-  --color-neutral-200: oklch(92% 0.015 60);
-  --color-neutral-800: oklch(28% 0.04 260);
-  --color-neutral-950: oklch(14% 0.02 260);
+  /* --- 2. Neutral Scale Definitions --- */
+  --color-neutral-50: oklch(99% 0.005 260);
+  --color-neutral-100: oklch(96% 0.01 260);
+  --color-neutral-200: oklch(92% 0.02 260);
+  --color-neutral-800: oklch(28% 0.05 260);
+  --color-neutral-900: oklch(21% 0.06 260);
+  --color-neutral-950: oklch(12% 0.04 260);
 
-  /* Semantic base colors */
-  --color-background: var(--color-neutral-50);
-  --color-foreground: oklch(18% 0.06 260);
-  --color-surface: var(--color-neutral-50);
-  --color-border: var(--color-neutral-200);
+  /* --- 3. Tailwind Variable Bridge --- */
+  /* We point Tailwind classes to our dynamic CSS variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+
+  /* Redefine primary as a variable so it can change in dark mode */
+  --color-primary: var(--primary-brand);
 }
 
+/* --- 4. Light Mode (Default) --- */
 :root {
-  /* 1. Tells iOS Safari to stop trying to darken the page */
-  color-scheme: light !important;
+  color-scheme: light dark;
+
+  --background: var(--color-neutral-50);
+  --foreground: oklch(25% 0.06 260);
+  --surface: #ffffff;
+  --border: var(--color-neutral-200);
+  --muted: var(--color-neutral-100);
+
+  /* Primary Brand for Light Mode */
+  --primary-brand: oklch(64% 0.24 274);
 }
 
+/* --- 5. Dark Mode (System & Manual Class) --- */
+/* We group these so both the 'dark' class AND system settings work */
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Re-declare light colors even if the OS is dark */
-    --color-background: oklch(99% 0.005 60);
-    --color-foreground: oklch(20% 0.05 260);
-    background-color: oklch(99% 0.005 60);
-    color: oklch(20% 0.05 260);
+    --background: var(--color-neutral-950);
+    --surface: oklch(18% 0.04 260);
+    --foreground: oklch(94% 0.01 260);
+    --border: oklch(24% 0.04 260);
+    --muted: oklch(35% 0.04 260);
+
+    /* Improved primary for Dark Mode */
+    --primary-brand: oklch(72% 0.16 274);
   }
 }
 
-/* Base layer styles */
+/* Manual override if you add class="dark" to your <html> tag */
+:root.dark {
+  --background: var(--color-neutral-950);
+  --surface: oklch(18% 0.04 260);
+  --foreground: oklch(94% 0.01 260);
+  --border: oklch(24% 0.04 260);
+  --muted: oklch(35% 0.04 260);
+  --primary-brand: oklch(72% 0.16 274);
+}
+
+/* --- 6. Base Styles --- */
 @layer base {
-  :root {
-    --background: var(--color-background);
-    --foreground: var(--color-foreground);
-  }
-
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv03", "cv04", "ss01";
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased transition-colors duration-500;
   }
+}
 
-  /* Improved focus states for gamification accessibility */
-  :focus-visible {
-    @apply outline-none ring-2 ring-primary/70 ring-offset-2 ring-offset-background;
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

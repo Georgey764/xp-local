@@ -3,7 +3,7 @@
 import { Menu, X, Zap, LayoutDashboard, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client"; // Ensure this path is correct
+import { createClient } from "@/utils/supabase/client";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -13,11 +13,9 @@ export default function Header() {
   const supabase = createClient();
 
   useEffect(() => {
-    // 1. Handle scroll styles
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
 
-    // 2. Check for active session
     const checkUser = async () => {
       const {
         data: { user: activeUser },
@@ -30,11 +28,7 @@ export default function Header() {
   }, [supabase]);
 
   const handleAction = () => {
-    if (user) {
-      router.push("/owner");
-    } else {
-      router.push("/owner-login");
-    }
+    user ? router.push("/owner") : router.push("/owner-login");
     setIsMenuOpen(false);
   };
 
@@ -47,42 +41,42 @@ export default function Header() {
       <div
         className={`max-w-7xl mx-auto transition-all duration-500 rounded-2xl ${
           scrolled
-            ? "bg-white/90 backdrop-blur-md shadow-sm border border-neutral-200/50px-6 py-2"
+            ? "bg-surface/90 backdrop-blur-md shadow-sm border border-border px-6 py-2"
             : "bg-transparent px-0 py-0"
         }`}
       >
         <div className="flex justify-between items-center h-12">
-          {/* Logo */}
+          {/* Logo - Using the primary variable */}
           <div
             onClick={() => router.push("/")}
             className="flex items-center gap-2 group cursor-pointer shrink-0"
           >
-            <div className="w-10 h-10 bg-[oklch(64%_0.24_274)] rounded-xl flex items-center justify-center transform group-hover:rotate-6 transition-all shadow-lg shadow-[oklch(64%_0.24_274)]/20">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center transform group-hover:rotate-6 transition-all shadow-lg shadow-primary/20">
               <Zap className="w-6 h-6 text-white fill-current" />
             </div>
-            <span className="text-2xl font-black tracking-tighter">
-              XP<span className="text-[oklch(64%_0.24_274)]">LOCAL</span>
+            <span className="text-2xl font-black tracking-tighter text-foreground">
+              XP<span className="text-primary">LOCAL</span>
             </span>
           </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center bg-neutral-100/80 rounded-full px-1.5 py-1 border border-neutral-200/20 shadow-inner">
+          {/* Desktop Nav - Using muted and surface variables */}
+          <div className="hidden md:flex items-center bg-muted/50 rounded-full px-1.5 py-1 border border-border shadow-inner">
             {["Product", "How it Works", "Pricing"].map((item) => (
               <a
                 key={item}
                 href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className="px-5 py-1.5 text-sm font-semibold text-neutral-600  hover:text-[oklch(64%_0.24_274)] transition-all rounded-full hover:bg-white "
+                className="px-5 py-1.5 text-sm font-semibold text-foreground/70 hover:text-primary transition-all rounded-full hover:bg-surface"
               >
                 {item}
               </a>
             ))}
           </div>
 
-          {/* Dynamic Action Button */}
+          {/* Dynamic Action Button - Replaced bg-neutral-900 with foreground logic */}
           <div className="hidden md:flex items-center">
             <button
               onClick={handleAction}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-neutral-900 text-white hover:ring-4 hover:ring-neutral-200 transition-all active:scale-95 cursor-pointer shadow-lg"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-foreground text-background hover:ring-4 hover:ring-primary/20 transition-all active:scale-95 cursor-pointer shadow-lg"
             >
               {user ? (
                 <>
@@ -101,7 +95,7 @@ export default function Header() {
           {/* Mobile Menu Trigger */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2.5 rounded-xl bg-neutral-100 active:scale-90 transition-transform cursor-pointer"
+            className="md:hidden p-2.5 rounded-xl bg-muted text-foreground active:scale-90 transition-transform cursor-pointer"
           >
             {isMenuOpen ? (
               <X className="w-6 h-6" />
@@ -120,13 +114,13 @@ export default function Header() {
             : "opacity-0 -translate-y-8 pointer-events-none"
         }`}
       >
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-neutral-200">
+        <div className="bg-surface rounded-[2.5rem] p-8 shadow-2xl border border-border">
           <div className="space-y-6 mb-8 text-center">
             {["Product", "How it Works", "Pricing"].map((item) => (
               <a
                 key={item}
                 href="#"
-                className="block text-3xl font-black tracking-tight hover:text-[oklch(64%_0.24_274)] transition-colors"
+                className="block text-3xl font-black tracking-tight text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item}
@@ -134,20 +128,12 @@ export default function Header() {
             ))}
           </div>
 
-          <div className="pt-6 border-t border-neutral-100">
+          <div className="pt-6 border-t border-border">
             <button
               onClick={handleAction}
-              className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-[oklch(64%_0.24_274)] text-white rounded-2xl font-bold shadow-lg shadow-[oklch(64%_0.24_274)]/20 cursor-pointer hover:opacity-90 transition-opacity"
+              className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 cursor-pointer hover:opacity-90 transition-opacity"
             >
-              {user ? (
-                <>
-                  <LayoutDashboard className="w-5 h-5" /> Go to Dashboard
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-5 h-5" /> Sign In to Owner Portal
-                </>
-              )}
+              {user ? "Go to Dashboard" : "Sign In to Owner Portal"}
             </button>
           </div>
         </div>

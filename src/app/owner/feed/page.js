@@ -7,7 +7,6 @@ import {
   Clock,
   Activity,
   ChevronDown,
-  User,
   Zap,
   Loader2,
   RefreshCcw,
@@ -21,13 +20,9 @@ export default function FeedPage() {
   const [visibleCount, setVisibleCount] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
-  /**
-   * fetchLogs: Joins logs with public.profiles to get OAuth data (Name/Avatar)
-   */
   const fetchLogs = useCallback(async () => {
     const {
       data: { user },
-      error,
     } = await supabase.auth.getUser();
 
     try {
@@ -36,25 +31,14 @@ export default function FeedPage() {
         .select(
           `
           *,
-    profiles (
-      full_name,
-      avatar_url,
-      email
-    ),
-    venues!inner (
-      owner_id
-    )
+          profiles (full_name, avatar_url, email),
+          venues!inner (owner_id)
         `,
           { count: "exact" }
         )
         .eq("venues.owner_id", user.id)
         .order("created_at", { ascending: false });
 
-      console.log(data);
-
-      if (error) throw error;
-
-      // Map profiles data to the 'user_info' key for consistent UI rendering
       const formattedData = data?.map((log) => ({
         ...log,
         user_info: log.profiles,
@@ -72,7 +56,6 @@ export default function FeedPage() {
   useEffect(() => {
     fetchLogs();
 
-    // Real-time subscription: Re-fetches on new logs to ensure join data is captured
     const channel = supabase
       .channel("live-feed")
       .on(
@@ -91,7 +74,6 @@ export default function FeedPage() {
     };
   }, [supabase, fetchLogs]);
 
-  // Statistics calculations
   const todayEarnings = logs
     .filter(
       (log) =>
@@ -113,28 +95,25 @@ export default function FeedPage() {
 
   if (loading)
     return (
-      <div className="h-[80vh] flex flex-col items-center justify-center gap-4">
-        <Loader2
-          className="animate-spin text-[oklch(64%_0.24_274)]"
-          size={32}
-        />
-        <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-20">
+      <div className="h-[80vh] flex flex-col items-center justify-center gap-4 bg-background">
+        <Loader2 className="animate-spin text-primary" size={32} />
+        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20">
           Syncing Live Events...
         </span>
       </div>
     );
 
   return (
-    <div className="space-y-8 py-6 max-w-2xl mx-auto px-4 animate-in fade-in duration-700 font-sans">
+    <div className="space-y-8 py-6 max-w-2xl mx-auto px-4 animate-in fade-in duration-700 font-sans text-foreground">
       {/* HEADER & REFRESH */}
       <header className="flex justify-between items-end px-2">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
-            Activity <span className="text-[oklch(64%_0.24_274)]">Feed.</span>
+            Activity <span className="text-primary">Feed.</span>
           </h1>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-30">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-foreground/30">
               {totalCount} Total Events • Live
             </p>
           </div>
@@ -144,50 +123,50 @@ export default function FeedPage() {
             setLoading(true);
             fetchLogs();
           }}
-          className="p-4 bg-neutral-50 rounded-[1.25rem] text-neutral-400 hover:text-black transition-all active:scale-90"
+          className="p-4 bg-muted rounded-[1.25rem] text-foreground/40 hover:text-foreground transition-all active:scale-90 border border-border"
         >
           <RefreshCcw size={18} />
         </button>
       </header>
 
-      {/* STAT CARDS: GAINS VS BURNS */}
+      {/* STAT CARDS */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-[2.5rem] border border-neutral-100 shadow-sm flex items-center justify-between">
+        <div className="bg-surface p-6 rounded-[2.5rem] border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-widest opacity-30 mb-1">
+            <p className="text-[8px] font-black uppercase tracking-widest text-foreground/30 mb-1">
               XP Issued (Today)
             </p>
             <p className="text-2xl font-black text-green-500">
               +{todayEarnings.toLocaleString()}
             </p>
           </div>
-          <Activity size={24} className="text-green-500 opacity-10" />
+          <Activity size={24} className="text-green-500 opacity-20" />
         </div>
-        <div className="bg-white p-6 rounded-[2.5rem] border border-neutral-100 shadow-sm flex items-center justify-between">
+        <div className="bg-surface p-6 rounded-[2.5rem] border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-widest opacity-30 mb-1">
+            <p className="text-[8px] font-black uppercase tracking-widest text-foreground/30 mb-1">
               XP Burned (Today)
             </p>
             <p className="text-2xl font-black text-red-500">
               -{todayRedemptions.toLocaleString()}
             </p>
           </div>
-          <Zap size={24} className="text-red-500 opacity-10" />
+          <Zap size={24} className="text-red-500 opacity-20" />
         </div>
       </div>
 
       {/* ACTIVITY FEED LIST */}
-      <div className="bg-white rounded-[3.5rem] border border-neutral-100 shadow-xl overflow-hidden">
-        <div className="divide-y divide-neutral-50">
+      <div className="bg-surface rounded-[3.5rem] border border-border shadow-xl overflow-hidden">
+        <div className="divide-y divide-border">
           {currentItems.length > 0 ? (
             currentItems.map((item) => (
               <div
                 key={item.id}
-                className="p-8 flex items-center justify-between hover:bg-neutral-50/50 transition-colors group"
+                className="p-8 flex items-center justify-between hover:bg-muted/30 transition-colors group"
               >
                 <div className="flex items-center gap-5">
-                  {/* DYNAMIC USER AVATAR (Google Photo or Initial) */}
-                  <div className="w-14 h-14 bg-neutral-900 rounded-[1.3rem] flex items-center justify-center overflow-hidden shadow-lg border border-white/10">
+                  {/* AVATAR */}
+                  <div className="w-14 h-14 bg-foreground rounded-[1.3rem] flex items-center justify-center overflow-hidden shadow-lg border border-border">
                     {item.user_info?.avatar_url ? (
                       <img
                         src={item.user_info.avatar_url}
@@ -195,7 +174,7 @@ export default function FeedPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-black text-lg">
+                      <span className="text-background font-black text-lg">
                         {item.user_info?.full_name?.[0] ||
                           item.user_info?.email?.[0].toUpperCase() ||
                           "G"}
@@ -204,28 +183,22 @@ export default function FeedPage() {
                   </div>
 
                   <div className="space-y-1">
-                    {/* DISPLAY NAME: Prioritizes Google Full Name */}
-                    <div className="font-black text-sm tracking-tight text-black flex items-center gap-2">
+                    <div className="font-black text-sm tracking-tight text-foreground flex items-center gap-2">
                       {item.user_info?.full_name ||
                         item.user_info?.email?.split("@")[0] ||
                         "Guest"}
                       {item.xp_change > 49 && (
-                        <TrendingUp
-                          size={12}
-                          className="text-[oklch(64%_0.24_274)]"
-                        />
+                        <TrendingUp size={12} className="text-primary" />
                       )}
                     </div>
-                    <div className="text-[10px] font-black opacity-40 uppercase tracking-widest italic leading-none">
+                    <div className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic leading-none">
                       {item.action_name} —{" "}
-                      <span className="text-[oklch(64%_0.24_274)]">
-                        {item.display_name}
-                      </span>
+                      <span className="text-primary">{item.display_name}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* XP CHANGE INDICATOR */}
+                {/* XP CHANGE */}
                 <div className="text-right space-y-1">
                   <div
                     className={`text-lg font-black ${
@@ -234,7 +207,7 @@ export default function FeedPage() {
                   >
                     {item.xp_change > 0 ? `+${item.xp_change}` : item.xp_change}
                   </div>
-                  <div className="text-[9px] font-bold opacity-20 uppercase flex items-center justify-end gap-1">
+                  <div className="text-[9px] font-bold text-foreground/20 uppercase flex items-center justify-end gap-1">
                     <Clock size={10} />{" "}
                     {formatDistanceToNow(new Date(item.created_at))} ago
                   </div>
@@ -243,8 +216,8 @@ export default function FeedPage() {
             ))
           ) : (
             <div className="p-20 text-center space-y-4">
-              <Zap size={40} className="mx-auto opacity-10" />
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-20 italic">
+              <Zap size={40} className="mx-auto text-foreground/10" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-foreground/20 italic">
                 Awaiting your first event...
               </p>
             </div>
@@ -255,10 +228,10 @@ export default function FeedPage() {
         {hasMore && (
           <button
             onClick={() => setVisibleCount((prev) => prev + 10)}
-            className="w-full py-8 bg-neutral-50/50 hover:bg-neutral-100 transition-all border-t border-neutral-100 flex items-center justify-center gap-3 active:bg-neutral-200"
+            className="w-full py-8 bg-muted/50 hover:bg-muted transition-all border-t border-border flex items-center justify-center gap-3 active:bg-muted"
           >
-            <ChevronDown size={16} className="text-neutral-300" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+            <ChevronDown size={16} className="text-foreground/20" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30">
               Load Earlier Activity
             </span>
           </button>

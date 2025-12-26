@@ -21,24 +21,16 @@ export default function Sidebar() {
   const supabase = createClient();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false); // Renamed for clarity
+  const [mounted, setMounted] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  // 1. Separate the "Mounting" logic from data fetching to avoid cascading renders
   useEffect(() => {
-    // Using requestAnimationFrame or a 0ms timeout pushes the update
-    // to the next tick, avoiding the synchronous cascading render warning.
-    const frame = requestAnimationFrame(() => {
-      setMounted(true);
-    });
-
+    const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // 2. Separate effect for user data
   useEffect(() => {
     if (!mounted) return;
-
     const getUser = async () => {
       const {
         data: { user },
@@ -64,10 +56,9 @@ export default function Sidebar() {
     }
   };
 
-  // Prevent hydration mismatch by returning null or a shell until mounted
   if (!mounted)
     return (
-      <div className="hidden lg:block w-72 bg-white h-screen border-r border-neutral-100" />
+      <div className="hidden lg:block w-72 bg-surface h-screen border-r border-border" />
     );
 
   return (
@@ -75,7 +66,7 @@ export default function Sidebar() {
       {/* MOBILE TRIGGER */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-5 left-5 z-[100] p-3 bg-[oklch(64%_0.24_274)] text-white rounded-2xl shadow-xl active:scale-90 transition-all"
+        className="lg:hidden fixed top-5 left-5 z-[100] p-3 bg-primary text-white rounded-2xl shadow-xl active:scale-90"
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -87,38 +78,40 @@ export default function Sidebar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-[80]"
+            className="lg:hidden fixed inset-0 bg-background/60 backdrop-blur-sm z-[80]"
             onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR ASIDE */}
+      {/* SIDEBAR ASIDE - LOCKED TO VIEWPORT HEIGHT */}
       <aside
         className={`
-          fixed top-0 left-0 z-[90] h-full w-72 bg-white flex flex-col border-r border-neutral-100
-          transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+          fixed top-0 left-0 z-[90] w-72 bg-surface flex flex-col border-r border-border
+          transition-transform duration-500 ease-in-out
+          h-screen lg:h-screen lg:sticky lg:top-0 shrink-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:sticky lg:top-0
+          lg:translate-x-0
         `}
       >
-        <div className="p-10">
+        <div className="p-10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[oklch(64%_0.24_274)] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[oklch(64%_0.24_274)]/20">
+            <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div>
-              <h2 className="font-black text-xl uppercase italic tracking-tighter leading-none">
+              <h2 className="font-black text-xl uppercase italic tracking-tighter leading-none text-foreground">
                 XP LOCAL
               </h2>
-              <p className="text-[8px] font-black uppercase tracking-[0.4em] opacity-20">
+              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-foreground/20">
                 Store Owner
               </p>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 px-6 space-y-2">
+        {/* Scrollable Nav area if menu grows too large */}
+        <nav className="flex-1 px-6 space-y-2 overflow-y-auto no-scrollbar">
           {menu.map((item) => {
             const isActive = pathname === item.path;
             return (
@@ -133,41 +126,38 @@ export default function Sidebar() {
                   flex items-center justify-between px-5 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all
                   ${
                     isActive
-                      ? "bg-[oklch(64%_0.24_274)] text-white shadow-xl shadow-[oklch(64%_0.24_274)]/25"
-                      : "text-neutral-400 hover:text-neutral-900 hover:bg-neutral-50"
+                      ? "bg-primary text-white shadow-xl shadow-primary/25"
+                      : "text-foreground/40 hover:text-foreground hover:bg-muted"
                   }
                 `}
                 >
                   <div className="flex items-center gap-4">
                     <item.icon
                       size={18}
-                      className={isActive ? "text-white" : "text-neutral-300"}
+                      className={isActive ? "text-white" : "text-foreground/20"}
                     />
                     {item.label}
                   </div>
-                  {isActive && (
-                    <motion.div layoutId="arrow">
-                      <ChevronRight size={14} />
-                    </motion.div>
-                  )}
+                  {isActive && <ChevronRight size={14} />}
                 </div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-6 space-y-4">
-          <div className="bg-neutral-50 rounded-[2.5rem] p-4 flex items-center gap-3 border border-neutral-100">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-neutral-100 font-black text-[oklch(64%_0.24_274)] text-xs">
+        {/* Footer Fixed at Bottom */}
+        <div className="p-6 space-y-4 shrink-0 mt-auto border-t border-border/10">
+          <div className="bg-muted/50 rounded-[2.5rem] p-4 flex items-center gap-3 border border-border">
+            <div className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center shadow-sm border border-border font-black text-primary text-xs">
               {userEmail ? userEmail[0].toUpperCase() : "O"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-wider truncate">
+              <p className="text-[9px] font-black uppercase tracking-wider truncate text-foreground">
                 {userEmail ? userEmail.split("@")[0] : "Admin"}
               </p>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[7px] font-bold text-neutral-400 uppercase tracking-widest">
+                <span className="text-[7px] font-bold text-foreground/30 uppercase tracking-widest">
                   Active Store
                 </span>
               </div>
@@ -176,7 +166,7 @@ export default function Sidebar() {
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-all group"
+            className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-foreground/40 hover:bg-red-500/10 hover:text-red-500 transition-all group"
           >
             <LogOut
               size={16}
