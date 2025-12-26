@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Enable class-based dark mode (works alongside media query) */
-@custom-variant dark (&:where(.dark, .dark *));
+/* @custom-variant dark (&:where(.dark, .dark *)); */
 
 /* Define theme colors (generates bg-primary, text-accent, etc.) */
 @theme {
@@ -33,7 +33,7 @@
 }
 
 /* Dark mode overrides (applied via class OR media query) */
-.dark {
+/* .dark {
   --color-background: var(--color-neutral-950);
   --color-foreground: oklch(92% 0.02 260);
   --color-surface: oklch(22% 0.03 260);
@@ -45,10 +45,10 @@
   --color-accent: oklch(92% 0.16 118);
   --color-accent-600: oklch(84% 0.15 118);
   --color-reward: oklch(88% 0.16 75);
-}
+} */
 
 /* System preference fallback (when no .dark/.light class is set) */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root:not(.light) {
     --color-background: var(--color-neutral-950);
     --color-foreground: oklch(92% 0.02 260);
@@ -59,7 +59,7 @@
     --color-accent: oklch(92% 0.16 118);
     --color-reward: oklch(88% 0.16 75);
   }
-}
+} */
 
 /* Base layer styles */
 @layer base {
