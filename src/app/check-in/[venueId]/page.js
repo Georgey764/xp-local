@@ -32,7 +32,6 @@ export default function CheckInPage() {
   const handleClaimXP = useCallback(
     async (userId) => {
       try {
-        // This single call now handles XP + Completion + Activity Log
         const { data, error } = await supabase.rpc("claim_scan_xp", {
           user_id_input: userId,
           venue_id_input: venueId,
@@ -40,7 +39,7 @@ export default function CheckInPage() {
 
         if (error) throw error;
 
-        // Sync UI status
+        // Sync UI status based on RPC return
         setClaimStatus(data && data.success ? "success" : "cooldown");
       } catch (err) {
         console.error("Claim Error:", err);
@@ -54,10 +53,9 @@ export default function CheckInPage() {
 
   useEffect(() => {
     const initCheckIn = async () => {
-      // 1. Pre-validate UUID format locally
+      // 1. Local UUID Validation
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
       if (!uuidRegex.test(venueId)) {
         setIsValidVenue(false);
         setLoading(false);
@@ -65,7 +63,7 @@ export default function CheckInPage() {
       }
 
       try {
-        // 2. Verify Venue Existence
+        // 2. Fetch Venue Data (Should be public in RLS)
         const { data: venueRes, error: venueErr } = await supabase
           .from("venues")
           .select("name")
@@ -73,6 +71,7 @@ export default function CheckInPage() {
           .maybeSingle();
 
         if (venueErr || !venueRes) {
+          console.log("Venue not found or RLS issue:", venueErr);
           setIsValidVenue(false);
           setLoading(false);
           return;
@@ -80,29 +79,32 @@ export default function CheckInPage() {
 
         setVenueName(venueRes.name);
 
-        // 3. Parallel fetch of Marketplace preview and Auth state
-        const [rewardsRes, authRes] = await Promise.all([
-          supabase
-            .from("rewards")
-            .select("label, cost")
-            .eq("venue_id", venueId)
-            .limit(4),
-          supabase.auth.getUser(),
-        ]);
+        // 3. Fetch Rewards (Attempt to fetch, don't kill page if it fails)
+        const { data: rewardsRes } = await supabase
+          .from("rewards")
+          .select("label, cost")
+          .eq("venue_id", venueId)
+          .limit(4);
 
-        setRewards(rewardsRes.data || []);
-        const activeUser = authRes.data.user;
-        setUser(activeUser);
+        setRewards(rewardsRes || []);
+
+        // 4. Check Auth State
+        const {
+          data: { user: activeUser },
+          error: authErr,
+        } = await supabase.auth.getUser();
 
         if (activeUser) {
-          // Trigger the XP claim automatically if logged in
+          setUser(activeUser);
+          // Only trigger XP claim if we have a valid user
           await handleClaimXP(activeUser.id);
         } else {
+          // If no user, we stop loading here so they see the "Unsigned View"
           setLoading(false);
         }
       } catch (err) {
-        console.loge(err);
-        setIsValidVenue(false);
+        console.error("Initialization Error:", err);
+        // We only show invalid if the venue itself couldn't be verified
         setLoading(false);
       }
     };
@@ -172,7 +174,7 @@ export default function CheckInPage() {
         {/* --- INTERACTIVE CARD --- */}
         <div className="bg-neutral-50 rounded-[3rem] p-8 border border-neutral-100 space-y-8 shadow-sm">
           {!user ? (
-            /* --- UNSIGNED VIEW --- */
+            /* --- UNSIGNED VIEW (Visible to logged out users) --- */
             <div className="space-y-8">
               <div className="flex items-center gap-4 bg-white p-5 rounded-[2rem] shadow-sm">
                 <Sparkles size={20} className="text-[oklch(88%_0.19_118)]" />
@@ -186,29 +188,31 @@ export default function CheckInPage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 px-1">
-                  <ShoppingBag size={14} className="opacity-20" />
-                  <h4 className="text-[9px] font-black uppercase tracking-widest opacity-20 italic">
-                    Marketplace Preview
-                  </h4>
+              {rewards.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 px-1">
+                    <ShoppingBag size={14} className="opacity-20" />
+                    <h4 className="text-[9px] font-black uppercase tracking-widest opacity-20 italic">
+                      Marketplace Preview
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {rewards.map((reward, i) => (
+                      <div
+                        key={i}
+                        className="bg-white p-4 rounded-2xl border border-neutral-50 flex flex-col gap-1"
+                      >
+                        <span className="text-[10px] font-bold uppercase truncate">
+                          {reward.label}
+                        </span>
+                        <span className="text-[9px] font-black text-[oklch(64%_0.24_274)]">
+                          {reward.cost} XP
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {rewards.map((reward, i) => (
-                    <div
-                      key={i}
-                      className="bg-white p-4 rounded-2xl border border-neutral-50 flex flex-col gap-1"
-                    >
-                      <span className="text-[10px] font-bold uppercase truncate">
-                        {reward.label}
-                      </span>
-                      <span className="text-[9px] font-black text-[oklch(64%_0.24_274)]">
-                        {reward.cost} XP
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
 
               <button
                 onClick={handleOAuthSignIn}
@@ -221,7 +225,6 @@ export default function CheckInPage() {
             /* --- SIGNED IN VIEW --- */
             <div className="text-center py-4 space-y-6">
               {claimStatus === "success" ? (
-                /* SUCCESS STATE: CELEBRATE XP */
                 <div className="space-y-6 animate-in zoom-in-95 duration-500">
                   <div className="w-20 h-20 bg-[oklch(88%_0.19_118)]/10 rounded-full flex items-center justify-center mx-auto text-[oklch(88%_0.19_118)]">
                     <CheckCircle2 size={56} />
@@ -242,7 +245,6 @@ export default function CheckInPage() {
                   </button>
                 </div>
               ) : (
-                /* COOLDOWN STATE: LOCKED */
                 <div className="space-y-6">
                   <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto text-neutral-300">
                     <Lock size={40} />
