@@ -27,6 +27,8 @@ import {
   Check, // Added for validation feedback
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const TASK_REGISTRY = [
   {
     id: "recurring",
