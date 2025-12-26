@@ -1,7 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+export function createClient() {
+  // Use empty strings as fallbacks so createBrowserClient doesn't throw an immediate error
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-export const createClient = () =>
-  createBrowserClient(supabaseUrl!, supabaseKey!);
+  return createBrowserClient(url, key);
+}
