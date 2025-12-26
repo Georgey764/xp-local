@@ -56,7 +56,7 @@ const App = () => {
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[oklch(96%_0.01_60)] dark:bg-[oklch(22%_0.03_260)] border border-neutral-200 dark:border-neutral-700 text-[oklch(64%_0.24_274)] text-xs font-black mb-8 uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[oklch(96%_0.01_60)] border border-neutral-200 text-[oklch(64%_0.24_274)] text-xs font-black mb-8 uppercase tracking-widest">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[oklch(64%_0.24_274)] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[oklch(64%_0.24_274)]"></span>
@@ -81,7 +81,7 @@ const App = () => {
                 Get Started Free
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="w-full sm:w-auto px-10 py-5 bg-[var(--background)] text-[var(--foreground)] font-black rounded-[2rem] border-2 border-neutral-200 dark:border-neutral-800 hover:border-[oklch(88%_0.19_118)] transition-all flex items-center justify-center gap-2">
+              <button className="w-full sm:w-auto px-10 py-5 bg-[var(--background)] text-[var(--foreground)] font-black rounded-[2rem] border-2 border-neutral-200 hover:border-[oklch(88%_0.19_118)] transition-all flex items-center justify-center gap-2">
                 The ROI Case Study
               </button>
             </div>
@@ -90,7 +90,7 @@ const App = () => {
       </section>
 
       {/* Social Proof / Stats */}
-      <section className="py-20 border-y border-neutral-100 dark:border-neutral-800 bg-[oklch(99%_0.005_60)] dark:bg-[oklch(14%_0.02_260)]">
+      <section className="py-20 border-y border-neutral-100 bg-[oklch(99%_0.005_60)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
             {[
@@ -141,7 +141,7 @@ const App = () => {
             {features.map((feature, idx) => (
               <div
                 key={idx}
-                className="group p-10 rounded-[3rem] bg-[oklch(99%_0.005_60)] dark:bg-[oklch(22%_0.03_260)] border border-transparent hover:border-[oklch(88%_0.19_118)] hover:bg-[var(--background)] hover:shadow-2xl transition-all cursor-default"
+                className="group p-10 rounded-[3rem] bg-[oklch(99%_0.005_60)] border border-transparent hover:border-[oklch(88%_0.19_118)] hover:bg-[var(--background)] hover:shadow-2xl transition-all cursor-default"
               >
                 <div className="w-16 h-16 bg-[var(--background)] rounded-2xl flex items-center justify-center shadow-sm mb-8 group-hover:scale-110 group-hover:-rotate-3 transition-transform">
                   {feature.icon}
@@ -318,92 +318,11 @@ const App = () => {
               </a>
             </div>
           </div>
-          <div className="mt-16 pt-8 border-t border-neutral-100 dark:border-neutral-800 text-center text-neutral-300 text-xs font-bold uppercase tracking-[0.2em]">
+          <div className="mt-16 pt-8 border-t border-neutral-100 text-center text-neutral-300 text-xs font-bold uppercase tracking-[0.2em]">
             © 2025 XP Local Technologies Inc. All Rights Reserved.
           </div>
         </div>
       </footer>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @import "tailwindcss";
-
-        @theme {
-          /* Core semantic colors – gamification focused */
-          --color-primary: oklch(64% 0.24 274); /* Electric violet – CTAs, progress, main actions */
-          --color-primary-600: oklch(58% 0.23 274); /* Hover/active */
-          --color-primary-700: oklch(50% 0.22 274); /* Darker press state */
-
-          --color-accent: oklch(88% 0.19 118); /* Neon lime glow – badges, highlights, streaks */
-          --color-accent-600: oklch(80% 0.18 118); /* Slightly muted hover */
-
-          --color-reward: oklch(84% 0.17 75); /* Golden reward pop – achievements, +XP */
-          --color-reward-600: oklch(76% 0.16 75);
-
-          /* Neutrals */
-          --color-neutral-50: oklch(99% 0.005 60); /* Almost pure white – light mode bg/cards */
-          --color-neutral-100: oklch(96% 0.01 60);
-          --color-neutral-200: oklch(92% 0.015 60);
-          --color-neutral-800: oklch(28% 0.04 260);
-          --color-neutral-950: oklch(14% 0.02 260); /* Deep slate – dark mode background */
-
-          /* Semantic aliases */
-          --color-background: var(--color-neutral-50);
-          --color-foreground: oklch(20% 0.05 260);
-          --color-surface: var(--color-neutral-50);
-          --color-border: oklch(88% 0.015 260);
-        }
-
-        /* Dark mode adjustments */
-        .dark {
-          --color-background: var(--color-neutral-950);
-          --color-foreground: oklch(92% 0.02 260);
-          --color-surface: oklch(22% 0.03 260);
-          --color-border: oklch(40% 0.03 260);
-
-          /* Soften vivid colors */
-          --color-primary: oklch(72% 0.23 274);
-          --color-accent: oklch(92% 0.16 118);
-          --color-reward: oklch(88% 0.16 75);
-        }
-
-        @media (prefers-color-scheme: dark) {
-          :root:not(.light) {
-            --color-background: var(--color-neutral-950);
-            --color-foreground: oklch(92% 0.02 260);
-            --color-surface: oklch(22% 0.03 260);
-            --color-border: oklch(40% 0.03 260);
-
-            --color-primary: oklch(72% 0.23 274);
-            --color-accent: oklch(92% 0.16 118);
-            --color-reward: oklch(88% 0.16 75);
-          }
-        }
-
-        :root {
-          --background: var(--color-background);
-          --foreground: var(--color-foreground);
-        }
-
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 10s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `,
-        }}
-      />
     </div>
   );
 };
