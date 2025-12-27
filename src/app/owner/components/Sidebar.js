@@ -66,7 +66,7 @@ export default function Sidebar() {
       {/* MOBILE TRIGGER */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-5 left-5 z-[100] p-3 bg-primary text-white rounded-2xl shadow-xl active:scale-90"
+        className="lg:hidden fixed top-5 left-5 z-[100] p-3 bg-primary text-white rounded-2xl shadow-xl active:scale-90 cursor-pointer"
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -78,39 +78,40 @@ export default function Sidebar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 bg-background/60 backdrop-blur-sm z-[80]"
+            className="lg:hidden fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-[80]"
             onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR ASIDE - LOCKED TO VIEWPORT HEIGHT */}
+      {/* SIDEBAR ASIDE */}
       <aside
         className={`
-          fixed top-0 left-0 z-[90] w-72 bg-surface flex flex-col border-r border-border
+          fixed top-0 left-0 z-[90] w-72 bg-surface flex flex-col border-r border-neutral-100
           transition-transform duration-500 ease-in-out
           h-screen lg:h-screen lg:sticky lg:top-0 shrink-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
         `}
       >
+        {/* LOGO AREA */}
         <div className="p-10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20 transition-transform hover:rotate-6">
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div>
-              <h2 className="font-black text-xl uppercase italic tracking-tighter leading-none text-foreground">
+              <h2 className="font-black text-xl uppercase italic tracking-tighter leading-none text-neutral-950">
                 XP LOCAL
               </h2>
-              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-foreground/20">
+              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-neutral-200">
                 Store Owner
               </p>
             </div>
           </div>
         </div>
 
-        {/* Scrollable Nav area if menu grows too large */}
+        {/* NAVIGATION AREA */}
         <nav className="flex-1 px-6 space-y-2 overflow-y-auto no-scrollbar">
           {menu.map((item) => {
             const isActive = pathname === item.path;
@@ -127,14 +128,14 @@ export default function Sidebar() {
                   ${
                     isActive
                       ? "bg-primary text-white shadow-xl shadow-primary/25"
-                      : "text-foreground/40 hover:text-foreground hover:bg-muted"
+                      : "text-neutral-400 hover:text-neutral-900 hover:bg-neutral-50"
                   }
                 `}
                 >
                   <div className="flex items-center gap-4">
                     <item.icon
                       size={18}
-                      className={isActive ? "text-white" : "text-foreground/20"}
+                      className={isActive ? "text-white" : "text-neutral-200"}
                     />
                     {item.label}
                   </div>
@@ -145,20 +146,21 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Footer Fixed at Bottom */}
-        <div className="p-6 space-y-4 shrink-0 mt-auto border-t border-border/10">
-          <div className="bg-muted/50 rounded-[2.5rem] p-4 flex items-center gap-3 border border-border">
-            <div className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center shadow-sm border border-border font-black text-primary text-xs">
+        {/* FOOTER AREA */}
+        <div className="p-6 space-y-4 shrink-0 mt-auto border-t border-neutral-100/50">
+          {/* USER CARD */}
+          <div className="bg-neutral-50/50 rounded-[2.5rem] p-4 flex items-center gap-3 border border-neutral-100">
+            <div className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center shadow-sm border border-neutral-100 font-black text-primary text-xs">
               {userEmail ? userEmail[0].toUpperCase() : "O"}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-wider truncate text-foreground">
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-[9px] font-black uppercase tracking-wider truncate text-neutral-950">
                 {userEmail ? userEmail.split("@")[0] : "Admin"}
               </p>
               <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[7px] font-bold text-foreground/30 uppercase tracking-widest">
-                  Active Store
+                <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--color-accent)]" />
+                <span className="text-[7px] font-bold text-neutral-200 uppercase tracking-widest">
+                  Live Terminal
                 </span>
               </div>
             </div>
@@ -166,7 +168,7 @@ export default function Sidebar() {
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-foreground/40 hover:bg-red-500/10 hover:text-red-500 transition-all group"
+            className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-neutral-400 hover:bg-red-500/10 hover:text-red-500 transition-all group cursor-pointer"
           >
             <LogOut
               size={16}

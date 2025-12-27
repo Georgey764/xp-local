@@ -103,7 +103,7 @@ export default function RedeemPage() {
             placeholder="000000"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            className="w-full bg-muted rounded-[2rem] px-8 py-8 text-4xl font-mono font-black tracking-[0.3em] text-center outline-none border-2 border-border focus:border-primary focus:bg-surface transition-all shadow-inner uppercase text-foreground placeholder:text-foreground/10"
+            className="w-full bg-muted/10 rounded-[2rem] px-8 py-8 text-4xl font-mono font-black tracking-[0.3em] text-center outline-none border-2 border-border focus:border-primary focus:bg-surface transition-all shadow-inner uppercase text-foreground placeholder:text-foreground/10"
           />
           <div className="absolute top-4 right-6 opacity-10 group-focus-within:opacity-30 transition-opacity">
             <Zap size={20} />

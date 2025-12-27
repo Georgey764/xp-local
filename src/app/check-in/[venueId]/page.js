@@ -121,15 +121,15 @@ export default function CheckInPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <AlertCircle size={40} className="text-red-500 mb-6" />
-        <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2 text-foreground">
+        <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2 text-neutral-950">
           Invalid URL.
         </h1>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/30 max-w-[200px] leading-relaxed">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800 opacity-40 max-w-[200px] leading-relaxed">
           The scanned QR code is either expired or the venue no longer exists.
         </p>
         <button
           onClick={() => router.push("/")}
-          className="mt-8 px-8 py-4 bg-foreground text-background rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl"
+          className="mt-8 px-8 py-4 bg-neutral-950 text-neutral-50 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl cursor-pointer"
         >
           Return Home
         </button>
@@ -137,31 +137,36 @@ export default function CheckInPage() {
     );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 font-sans antialiased text-foreground">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 font-sans antialiased text-foreground selection:bg-accent selection:text-black">
       <div className="w-full max-w-md space-y-6">
         <header className="text-center space-y-2">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border text-primary shadow-lg shadow-primary/10">
+          <div className="w-16 h-16 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-neutral-200 text-primary shadow-lg shadow-primary/10">
             <Zap size={32} fill="currentColor" />
           </div>
-          <p className="text-[10px] font-black uppercase text-foreground/30 tracking-[0.3em]">
+          <p className="text-[10px] font-black uppercase text-neutral-800 opacity-30 tracking-[0.3em]">
             Checking into
           </p>
-          <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
+          <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none text-neutral-950">
             {venueName}
           </h1>
         </header>
 
-        <div className="bg-surface rounded-[3rem] p-8 border border-border space-y-8 shadow-sm">
+        <div className="bg-surface rounded-[3rem] p-8 border border-neutral-100 space-y-8 shadow-sm relative overflow-hidden">
+          {/* Animated Blob for Aesthetic depth */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
+
           {!user ? (
-            <div className="space-y-8">
-              <div className="flex items-center gap-4 bg-muted/50 p-5 rounded-[2rem] border border-border">
-                <Sparkles size={20} className="text-accent" />
+            <div className="space-y-8 relative z-10">
+              <div className="flex items-center gap-4 bg-neutral-50 p-5 rounded-[2rem] border border-neutral-200">
+                <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Sparkles size={20} className="text-accent" />
+                </div>
                 <div>
-                  <h3 className="text-lg font-black italic uppercase leading-none">
+                  <h3 className="text-lg font-black italic uppercase leading-none text-neutral-950">
                     Congrats!
                   </h3>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mt-1">
-                    +50 XP Ready
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary mt-1">
+                    +50 XP Ready to claim
                   </p>
                 </div>
               </div>
@@ -169,8 +174,8 @@ export default function CheckInPage() {
               {rewards.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 px-1">
-                    <ShoppingBag size={14} className="text-foreground/20" />
-                    <h4 className="text-[9px] font-black uppercase tracking-widest text-foreground/20 italic">
+                    <ShoppingBag size={14} className="text-neutral-200" />
+                    <h4 className="text-[9px] font-black uppercase tracking-widest text-neutral-200 italic">
                       Marketplace Preview
                     </h4>
                   </div>
@@ -178,12 +183,12 @@ export default function CheckInPage() {
                     {rewards.map((reward, i) => (
                       <div
                         key={i}
-                        className="bg-background p-4 rounded-2xl border border-border flex flex-col gap-1"
+                        className="bg-background p-4 rounded-2xl border border-neutral-100 flex flex-col gap-1 shadow-sm"
                       >
-                        <span className="text-[10px] font-bold uppercase truncate">
+                        <span className="text-[10px] font-bold uppercase truncate text-neutral-900">
                           {reward.label}
                         </span>
-                        <span className="text-[9px] font-black text-primary">
+                        <span className="text-[9px] font-black text-reward">
                           {reward.cost} XP
                         </span>
                       </div>
@@ -194,49 +199,49 @@ export default function CheckInPage() {
 
               <button
                 onClick={handleOAuthSignIn}
-                className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-2 shadow-xl shadow-primary/20 active:scale-95 transition-all"
+                className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-2 shadow-xl shadow-primary/20 active:scale-95 transition-all cursor-pointer"
               >
                 Save my 50 XP now <ArrowRight size={16} />
               </button>
             </div>
           ) : (
-            <div className="text-center py-4 space-y-6">
+            <div className="text-center py-4 space-y-6 relative z-10">
               {claimStatus === "success" ? (
                 <div className="space-y-6 animate-in zoom-in-95 duration-500">
-                  <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto text-accent shadow-[0_0_20px_rgba(var(--color-accent),0.2)]">
-                    <CheckCircle2 size={56} />
+                  <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto text-black shadow-[0_0_30px_var(--color-accent)] shadow-accent/30">
+                    <CheckCircle2 size={48} />
                   </div>
                   <div>
                     <h2 className="text-4xl font-black italic uppercase tracking-tighter text-primary">
                       +50 XP Earned!
                     </h2>
-                    <p className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] mt-3">
-                      Your loyalty is paying off
+                    <p className="text-[10px] font-black text-neutral-800 opacity-40 uppercase tracking-[0.2em] mt-3">
+                      Visit the marketplace to redeem
                     </p>
                   </div>
                   <button
                     onClick={() => router.push(`/customer/${venueId}`)}
-                    className="w-full py-5 bg-foreground text-background rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] shadow-2xl active:scale-95 transition-all"
+                    className="w-full py-5 bg-neutral-950 text-neutral-50 rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] shadow-2xl active:scale-95 transition-all cursor-pointer"
                   >
-                    Go to Marketplace
+                    Redeem Rewards
                   </button>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto text-foreground/20">
-                    <Lock size={40} />
+                  <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mx-auto text-neutral-200 border border-neutral-200">
+                    <Lock size={32} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black italic uppercase leading-none">
+                    <h2 className="text-xl font-black italic uppercase leading-none text-neutral-950">
                       XP Already Claimed.
                     </h2>
-                    <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest mt-2">
-                      12-hour cooldown active
+                    <p className="text-[10px] font-bold text-neutral-800 opacity-40 uppercase tracking-widest mt-2">
+                      Check back in 12 hours
                     </p>
                   </div>
                   <button
                     onClick={() => router.push(`/customer/${venueId}`)}
-                    className="w-full py-4 bg-foreground text-background rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all"
+                    className="w-full py-4 bg-neutral-950 text-neutral-50 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all cursor-pointer"
                   >
                     Go to Dashboard
                   </button>

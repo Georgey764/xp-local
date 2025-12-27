@@ -1,15 +1,14 @@
 @import "tailwindcss";
 
-/* Ensure Tailwind v4 recognizes the .dark class strategy */
-@variant dark (&:where(.dark, .dark *));
-
 @theme {
-  /* --- 1. Static Brand Colors --- */
-  --color-primary: var(--primary-brand);
+  /* --- 1. Brand Tokens & Utility Mapping --- */
+  /* We define the colors directly here so Tailwind v4 generates all utilities */
+  --color-primary: oklch(64% 0.24 274);
   --color-accent: oklch(88% 0.19 118);
   --color-reward: oklch(84% 0.17 75);
 
-  /* --- 2. Neutral Scale --- */
+  /* --- 2. Foundation Neutral Scale --- */
+  /* Using your specific cool-toned OKLCH values */
   --color-neutral-50: oklch(99% 0.005 260);
   --color-neutral-100: oklch(96% 0.01 260);
   --color-neutral-200: oklch(92% 0.02 260);
@@ -18,53 +17,39 @@
   --color-neutral-950: oklch(12% 0.04 260);
 
   /* --- 3. Semantic Mapping --- */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-}
+  /* Mapping the system background and foreground */
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(12% 0.04 260);
 
-/* --- 4. Light Mode --- */
-:root {
-  color-scheme: light dark;
-  --background: var(--color-neutral-50);
-  --foreground: oklch(25% 0.06 260);
-  --surface: #ffffff;
-  --border: var(--color-neutral-200);
-  --muted: var(--color-neutral-100);
-  --primary-brand: oklch(64% 0.24 274);
-}
+  /* Additional Semantic Layers */
+  --color-surface: oklch(99% 0.005 260);
+  --color-border: oklch(92% 0.02 260);
+  --color-muted: oklch(60% 0.02 260);
 
-/* --- 5. Dark Mode Overrides --- */
-@layer theme {
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: var(--color-neutral-950);
-      --surface: oklch(18% 0.04 260);
-      --foreground: oklch(94% 0.01 260);
-      --border: oklch(24% 0.04 260);
-      --muted: oklch(35% 0.04 260);
-      --primary-brand: oklch(72% 0.16 274);
+  /* --- 4. Animations --- */
+  --animate-blob: blob 7s infinite;
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
     }
   }
-
-  .dark {
-    --background: var(--color-neutral-950);
-    --surface: oklch(18% 0.04 260);
-    --foreground: oklch(94% 0.01 260);
-    --border: oklch(24% 0.04 260);
-    --muted: oklch(35% 0.04 260);
-    --primary-brand: oklch(72% 0.16 274);
-  }
 }
 
-/* --- 6. Base Styles --- */
+/* Base styles to apply the theme variables to the document */
 @layer base {
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    @apply antialiased transition-colors duration-500;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
 }
 

@@ -123,7 +123,7 @@ export default function FeedPage() {
             setLoading(true);
             fetchLogs();
           }}
-          className="p-4 bg-muted rounded-[1.25rem] text-foreground/40 hover:text-foreground transition-all active:scale-90 border border-border"
+          className="p-4 rounded-[1.25rem] text-foreground/40 hover:text-foreground transition-all active:scale-90 border border-border"
         >
           <RefreshCcw size={18} />
         </button>

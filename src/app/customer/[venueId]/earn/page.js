@@ -63,7 +63,7 @@ export default function EarnXP() {
       setTasks(tasksRes.data || []);
       setCompletions(completionsRes.data || []);
     } catch (err) {
-      console.error("Failed to load earn data:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -80,29 +80,27 @@ export default function EarnXP() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-
     try {
       await supabase
         .from("task_completions")
         .insert([{ user_id: user.id, venue_id: venueId, task_type: taskType }]);
-
       await supabase.rpc("increment_balance", {
         user_id_input: user.id,
         venue_id_input: venueId,
         amount: xpAmount,
       });
-
-      await supabase.from("activity_logs").insert({
-        user_id: user.id,
-        venue_id: venueId,
-        action_name: taskType.toUpperCase(),
-        display_name: taskLabel,
-        xp_change: xpAmount,
-      });
-
+      await supabase
+        .from("activity_logs")
+        .insert({
+          user_id: user.id,
+          venue_id: venueId,
+          action_name: taskType.toUpperCase(),
+          display_name: taskLabel,
+          xp_change: xpAmount,
+        });
       loadData();
     } catch (err) {
-      console.error("Task credit error:", err);
+      console.error(err);
     }
   };
 
@@ -125,12 +123,12 @@ export default function EarnXP() {
         const cooldownEnd = new Date(lastComp.getTime() + 12 * 60 * 60 * 1000);
         if (now < cooldownEnd) {
           const diff = cooldownEnd - now;
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+          const h = Math.floor(diff / (1000 * 60 * 60));
+          const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const s = Math.floor((diff % (1000 * 60)) / 1000);
           return {
             disabled: true,
-            label: `${hours}h ${mins}m ${secs}s`,
+            label: `${h}h ${m}m ${s}s`,
             isCooldown: true,
           };
         }
@@ -154,67 +152,78 @@ export default function EarnXP() {
     );
 
   return (
-    <div className="p-6 space-y-8 max-w-md mx-auto min-h-screen bg-background text-foreground">
-      <header className="pt-10">
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter">
-          Earn <span className="text-primary">XP.</span>
-        </h1>
-        <p className="text-[9px] font-black uppercase tracking-widest opacity-30 mt-1">
-          Complete tasks to unlock rewards
-        </p>
-      </header>
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-accent selection:text-black pb-20">
+      <div className="p-6 space-y-8 max-w-md mx-auto">
+        <header className="pt-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-neutral-50 border border-neutral-100 rounded-full mb-3">
+            <Zap size={10} className="text-primary fill-primary" />
+            <span className="text-[9px] font-black uppercase tracking-widest opacity-60">
+              Quest Log
+            </span>
+          </div>
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none">
+            Earn <span className="text-primary">XP.</span>
+          </h1>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 mt-2">
+            Level up your status with daily actions
+          </p>
+        </header>
 
-      <div className="grid gap-4">
-        {tasks.map((task) => {
-          const status = getTaskStatus(task);
-          const isExternal = ["ig_follow", "google_review"].includes(
-            task.action_type
-          );
+        <div className="grid gap-4">
+          {tasks.map((task) => {
+            const status = getTaskStatus(task);
+            const isExternal = ["ig_follow", "google_review"].includes(
+              task.action_type
+            );
 
-          const content = (
-            <>
-              <div
-                className={`p-4 rounded-2xl transition-colors ${
-                  status.disabled
-                    ? "bg-muted text-foreground/20"
-                    : "bg-muted text-primary group-hover:bg-primary group-hover:text-white"
-                }`}
-              >
-                {ICON_MAP[task.action_type] || <Zap size={20} />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4
-                  className={`text-[12px] font-black uppercase tracking-tight truncate ${
-                    status.disabled ? "opacity-40" : ""
+            const TaskBody = (
+              <div className="flex items-center gap-5">
+                <div
+                  className={`p-4 rounded-2xl transition-all duration-300 ${
+                    status.disabled
+                      ? "bg-neutral-100 text-neutral-300"
+                      : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white group-hover:rotate-6"
                   }`}
                 >
-                  {task.label}
-                </h4>
-                <p className="text-[8px] font-bold uppercase opacity-30 leading-tight mt-0.5">
-                  {DESC_MAP[task.action_type]}
-                </p>
-                <p
-                  className={`text-[10px] font-black uppercase mt-1.5 ${
-                    status.isCooldown
-                      ? "text-accent font-mono"
-                      : status.disabled
-                      ? "text-foreground/20"
-                      : "text-primary"
-                  }`}
-                >
-                  {status.label ? status.label : `+${task.xp_reward} XP`}
-                </p>
-              </div>
-              {isExternal && !status.disabled ? (
-                <ExternalLink size={16} className="opacity-20 shrink-0" />
-              ) : (
-                <ChevronRight size={18} className="opacity-20 shrink-0" />
-              )}
-            </>
-          );
+                  {ICON_MAP[task.action_type] || <Zap size={20} />}
+                </div>
 
-          if (isExternal && !status.disabled) {
-            return (
+                <div className="flex-1 min-w-0">
+                  <h4
+                    className={`text-[12px] font-black uppercase tracking-tight truncate ${
+                      status.disabled ? "text-neutral-300" : "text-neutral-900"
+                    }`}
+                  >
+                    {task.label}
+                  </h4>
+                  <p className="text-[8px] font-bold uppercase opacity-30 leading-tight mt-0.5">
+                    {DESC_MAP[task.action_type]}
+                  </p>
+
+                  <div className="mt-2 flex items-center gap-2">
+                    <span
+                      className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                        status.isCooldown
+                          ? "bg-accent/10 text-accent font-mono"
+                          : status.disabled
+                          ? "bg-neutral-100 text-neutral-400"
+                          : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {status.label ? status.label : `+${task.xp_reward} XP`}
+                    </span>
+                  </div>
+                </div>
+
+                {isExternal && !status.disabled ? (
+                  <ExternalLink size={16} className="text-neutral-200" />
+                ) : (
+                  <ChevronRight size={18} className="text-neutral-200" />
+                )}
+              </div>
+            );
+
+            return isExternal && !status.disabled ? (
               <a
                 key={task.id}
                 href={task.target_url}
@@ -227,27 +236,25 @@ export default function EarnXP() {
                     task.label
                   )
                 }
-                className="w-full bg-surface p-6 rounded-[2.5rem] border border-border flex items-center gap-5 shadow-sm active:scale-95 transition-all text-left group"
+                className="w-full bg-surface p-6 rounded-[2.5rem] border border-neutral-100 shadow-sm active:scale-95 transition-all text-left group hover:border-primary/20 block"
               >
-                {content}
+                {TaskBody}
               </a>
+            ) : (
+              <button
+                key={task.id}
+                disabled={status.disabled}
+                className={`w-full bg-surface p-6 rounded-[2.5rem] border border-neutral-100 shadow-sm transition-all text-left ${
+                  status.disabled
+                    ? "opacity-60 cursor-not-allowed"
+                    : "active:scale-95 group hover:border-primary/20"
+                }`}
+              >
+                {TaskBody}
+              </button>
             );
-          }
-
-          return (
-            <button
-              key={task.id}
-              disabled={status.disabled}
-              className={`w-full bg-surface p-6 rounded-[2.5rem] border border-border flex items-center gap-5 shadow-sm transition-all text-left ${
-                status.disabled
-                  ? "opacity-60 cursor-not-allowed"
-                  : "active:scale-95 group"
-              }`}
-            >
-              {content}
-            </button>
-          );
-        })}
+          })}
+        </div>
       </div>
     </div>
   );
