@@ -2,7 +2,7 @@
 
 import Logo from "@/components/global/Logo";
 import React, { useState } from "react";
-import { Zap, ArrowRight, Chrome, ShieldCheck, Gift, Star } from "lucide-react";
+import { Zap, ArrowRight, Chrome, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -13,7 +13,7 @@ const Page = () => {
 
   const handleOAuthClick = async (provider) => {
     setIsLoading(true);
-    // Simulating delay for UI feedback
+    // Visual feedback delay
     setTimeout(() => setIsLoading(false), 1000);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -28,130 +28,98 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col lg:flex-row selection:bg-accent/30">
-      {/* Left Column: Brand & Social Proof */}
-      <div className="hidden lg:flex lg:w-1/2 bg-neutral-800 relative overflow-hidden flex-col justify-between p-12">
-        {/* Aesthetic Background Blobs using semantic theme colors */}
+    /* Force white background and black text explicitly to ignore system preferences */
+    <div className="min-h-screen bg-white text-black font-sans antialiased flex flex-col lg:flex-row selection:bg-accent selection:text-black">
+      {/* Left Column: Brand Identity (Forced Dark Section for Aesthetic Contrast) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-neutral-800 relative overflow-hidden flex-col justify-center p-12">
+        {/* Aesthetic Background Blobs using fixed oklch for the brand side */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px]" />
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary rounded-full blur-[120px] opacity-20 animate-pulse" />
+          <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-accent rounded-full blur-[100px] opacity-10" />
         </div>
 
-        <div className="relative z-10">
-          <Logo />
-
-          <h2 className="text-5xl font-black text-neutral-50 leading-tight mb-6 mt-12">
-            Welcome back to the <br />
-            <span className="text-accent italic">Leaderboard.</span>
-          </h2>
-          <p className="text-xl text-neutral-200 opacity-60 max-w-md font-medium leading-relaxed">
-            Access your secure venue dashboard to track ROI, manage custom
-            rewards, and monitor brand advocates.
-          </p>
-        </div>
-
-        {/* Floating Reward Preview */}
-        <div className="absolute bottom-40 right-10 z-20 animate-bounce transition-transform duration-1000 hidden xl:block">
-          <div className="bg-reward p-4 rounded-2xl shadow-2xl rotate-12">
-            <Gift className="text-white" size={24} />
-          </div>
-        </div>
-
-        {/* Testimonial Card */}
-        <div className="relative z-10 mt-auto bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2.5rem]">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full border-2 border-neutral-800 bg-neutral-900 overflow-hidden"
-                >
-                  <img
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${
-                      i + 25
-                    }`}
-                    alt="User"
-                  />
-                </div>
-              ))}
+        <div className="relative z-10 space-y-8">
+          <div
+            onClick={() => router.push("/")}
+            className="cursor-pointer flex items-center gap-2 group w-fit"
+          >
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+              <Zap className="w-8 h-8 fill-current" />
             </div>
-            <p className="text-sm font-bold text-neutral-50">
-              Trusted by 500+ premium venues
-            </p>
+            <span className="text-3xl font-black tracking-tighter text-white uppercase">
+              XP<span className="text-primary">LOCAL</span>
+            </span>
           </div>
-          <p className="text-neutral-200 italic font-medium leading-relaxed opacity-80">
-            &quot;The data-driven insights from XP Local changed how we think
-            about loyalty. Our organic social reach has never been higher.&quot;
-          </p>
-          <div className="flex items-center justify-between mt-6">
-            <p className="text-accent text-sm font-black uppercase tracking-widest">
-              — Sunset Bistro
+
+          <div className="space-y-4">
+            <h2 className="text-6xl font-black text-white leading-[0.9] tracking-tighter">
+              Partner <br />
+              <span className="text-accent italic">Dashboard.</span>
+            </h2>
+            <p className="text-xl text-white opacity-60 max-w-md font-medium leading-relaxed">
+              Secure access for venue owners to manage loyalty ecosystems, track
+              ROI, and scale their physical footprint digitally.
             </p>
-            <div className="flex gap-1 text-reward">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={12} fill="currentColor" />
-              ))}
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Column: OAuth Login Interface */}
-      <div className="flex-1 flex flex-col justify-center p-6 sm:p-12 lg:p-24 relative bg-background">
+      {/* Right Column: OAuth Login Interface (Strictly Light) */}
+      <div className="flex-1 flex flex-col justify-center p-6 sm:p-12 lg:p-24 relative bg-white">
         <div className="max-w-md w-full mx-auto">
-          {/* Mobile Logo Only */}
+          {/* Mobile Logo Only (Forced Black/White contrast) */}
           <div
             onClick={() => router.push("/")}
             className="cursor-pointer lg:hidden flex items-center gap-2 mb-12"
           >
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg">
-              <Zap className="w-4 h-4 text-white fill-current" />
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg">
+              <Zap className="w-5 h-5 text-white fill-current" />
             </div>
-            <span className="text-xl font-black tracking-tighter uppercase">
+            <span className="text-2xl font-black tracking-tighter uppercase text-black">
               XP<span className="text-primary">LOCAL</span>
             </span>
           </div>
 
           <div className="mb-12">
-            <h1 className="text-4xl font-black mb-3 tracking-tight text-neutral-950">
+            <h1 className="text-4xl font-black mb-3 tracking-tight text-black">
               Partner Sign In
             </h1>
-            <p className="opacity-40 font-medium text-lg leading-relaxed text-neutral-900">
+            <p className="text-black opacity-50 font-medium text-lg leading-relaxed">
               For your security, we use verified social authentication to manage
-              your venue ecosystem.
+              your venue.
             </p>
           </div>
 
           <div className="space-y-4">
-            {/* Google OAuth Button */}
+            {/* Google OAuth Button - Pure white background with border */}
             <button
               onClick={() => handleOAuthClick("google")}
               disabled={isLoading}
-              className="w-full group flex items-center justify-between px-8 py-5 bg-surface border-2 border-neutral-100 rounded-[2.5rem] hover:border-primary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              className="w-full group flex items-center justify-between px-8 py-6 bg-white border-2 border-neutral-100 rounded-[2rem] hover:border-primary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-sm hover:shadow-xl hover:shadow-primary/5"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 text-black">
                 <Chrome size={24} className="text-primary" />
-                <span className="font-black text-lg text-neutral-900">
-                  Continue with Google
-                </span>
+                <span className="font-black text-lg">Continue with Google</span>
               </div>
               <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-primary" />
             </button>
           </div>
 
-          <p className="mt-12 text-center text-[10px] font-black opacity-20 uppercase tracking-[0.3em] text-neutral-900">
-            Secure B2B Portal for Partners
-          </p>
+          <div className="mt-12 flex justify-center">
+            <p className="text-[10px] font-black text-black opacity-20 uppercase tracking-[0.3em]">
+              Secure Portal Version 2.5.0
+            </p>
+          </div>
         </div>
 
         {/* Status Bar */}
-        <div className="mt-auto pt-10 text-center lg:text-left flex items-center justify-center lg:justify-start gap-4 border-t border-neutral-100">
-          <button className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">
+        <div className="mt-auto pt-10 text-center lg:text-left flex items-center justify-center lg:justify-start gap-4 border-t border-neutral-100 bg-white">
+          <button className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-black opacity-40 hover:opacity-100 transition-opacity">
             <ShieldCheck size={14} className="text-primary" /> Encrypted Session
           </button>
           <span className="w-1 h-1 rounded-full bg-neutral-200"></span>
-          <button className="text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">
-            Version: 2.5.0
+          <button className="text-[10px] font-black uppercase tracking-widest text-black opacity-40 hover:opacity-100 transition-opacity">
+            Help & Support
           </button>
         </div>
       </div>
