@@ -1,5 +1,12 @@
 import Sidebar from "./components/Sidebar";
 
+export const metadata = {
+  icons: {
+    icon: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
+};
+
 export default function OwnerLayout({ children }) {
   return (
     /* 1. Use h-screen to lock the height to the viewport. 
