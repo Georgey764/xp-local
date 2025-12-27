@@ -25,8 +25,6 @@ import {
   X,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
-
 const TASK_REGISTRY = [
   {
     id: "recurring",
@@ -118,80 +116,50 @@ export default function XPLocalBuilder() {
     ],
   });
 
-  const isValidUrl = (url) => {
-    try {
-      return url.startsWith("https://");
-    } catch (e) {
-      return false;
-    }
-  };
-
   useEffect(() => {
     const checkUserStatus = async () => {
+      // Use getSession to prevent the 401 error in console for unauthenticated visitors
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return setLoading(false);
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return setLoading(false);
+
       const { data: staffRecord } = await supabase
         .from("venue_staff")
         .select("venue_id")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .eq("role", "admin")
         .maybeSingle();
+
       if (staffRecord) router.push("/owner");
       else setLoading(false);
     };
     checkUserStatus();
   }, [supabase, router]);
 
-  // Validation Logic
+  const isValidUrl = (url) => {
+    try {
+      return url.startsWith("https://") && url.length > 12;
+    } catch (e) {
+      return false;
+    }
+  };
+
   const isStep1Valid = () => {
     if (!formData.venueName.trim()) return false;
-    return !formData.selectedTasks.some((taskId) => {
-      const taskDef = TASK_REGISTRY.find((t) => t.id === taskId);
-      return taskDef?.requiresLink
-        ? !isValidUrl(formData.taskLinks[taskId])
-        : false;
+    return !formData.selectedTasks.some((id) => {
+      const task = TASK_REGISTRY.find((t) => t.id === id);
+      return task?.requiresLink ? !isValidUrl(formData.taskLinks[id]) : false;
     });
   };
 
-  const isStep2Valid = () => {
-    // Requires at least 1 reward AND all rewards must have an option selected
-    return (
-      formData.rewardCatalog.length >= 1 &&
-      formData.rewardCatalog.every(
-        (r) =>
-          r.promoId !== "" &&
-          (r.type === "free_item" ? r.itemName.trim() !== "" : true)
-      )
+  const isStep2Valid = () =>
+    formData.rewardCatalog.length >= 1 &&
+    formData.rewardCatalog.every(
+      (r) =>
+        r.promoId !== "" &&
+        (r.type === "free_item" ? r.itemName.trim() !== "" : true)
     );
-  };
-
-  // Reward Handlers
-  const addReward = () => {
-    setFormData({
-      ...formData,
-      rewardCatalog: [
-        ...formData.rewardCatalog,
-        {
-          id: Date.now().toString(),
-          promoId: "",
-          label: "",
-          xpCost: 0,
-          itemName: "",
-          type: "",
-        },
-      ],
-    });
-  };
-
-  const removeReward = (id) => {
-    if (formData.rewardCatalog.length <= 1) return;
-    setFormData({
-      ...formData,
-      rewardCatalog: formData.rewardCatalog.filter((r) => r.id !== id),
-    });
-  };
 
   const launchEconomy = async () => {
     setIsLaunching(true);
@@ -204,6 +172,7 @@ export default function XPLocalBuilder() {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-");
       const uniqueSlug = `${baseSlug}-${randomSuffix}`;
+
       const { data: venue } = await supabase
         .from("venues")
         .insert([
@@ -211,11 +180,12 @@ export default function XPLocalBuilder() {
             name: formData.venueName,
             slug: uniqueSlug,
             owner_id: user.id,
-            primary_color: "oklch(64% 0.24 274)",
+            primary_color: "var(--primary-brand)",
           },
         ])
         .select()
         .single();
+
       await supabase
         .from("venue_staff")
         .insert([{ venue_id: venue.id, user_id: user.id, role: "admin" }]);
@@ -239,6 +209,7 @@ export default function XPLocalBuilder() {
         is_active: true,
       }));
       await supabase.from("rewards").insert(rewardsToInsert);
+
       setQrUrl(`${window.location.origin}/check-in/${venue.id}`);
     } catch (err) {
       alert(err.message);
@@ -247,38 +218,18 @@ export default function XPLocalBuilder() {
     }
   };
 
-  const downloadQR = () => {
-    const svg = document.getElementById("venue-qr");
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = 1000;
-      canvas.height = 1000;
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 50, 50, 900, 900);
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `${formData.venueName}-QR.png`;
-      downloadLink.href = canvas.toDataURL("image/png");
-      downloadLink.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
-  };
-
   if (loading)
     return (
-      <div className="h-screen flex items-center justify-center font-black italic uppercase text-foreground/20">
-        Initializing...
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="animate-spin text-primary" size={32} />
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-background pb-24 font-sans antialiased text-foreground">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 transition-colors duration-500">
       <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-white">
+          <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
             <Zap size={20} fill="currentColor" />
           </div>
           <span className="font-black text-xl tracking-tighter uppercase italic">
@@ -288,19 +239,20 @@ export default function XPLocalBuilder() {
       </nav>
 
       <main className="max-w-xl mx-auto px-6 py-10">
+        {/* Step Indicator */}
         <div className="flex justify-center items-center gap-2 mb-12">
           {[1, 2, 3].map((num) => (
             <div
               key={num}
-              className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[10px] transition-all ${
+              className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-[10px] transition-all ${
                 step === num
                   ? "bg-primary text-white shadow-lg scale-110"
                   : step > num
                   ? "bg-accent text-black"
-                  : "bg-muted text-foreground/30"
+                  : "bg-muted text-foreground/20"
               }`}
             >
-              {step > num ? <CheckCircle2 size={12} /> : num}
+              {step > num ? <CheckCircle2 size={14} /> : num}
             </div>
           ))}
         </div>
@@ -321,17 +273,16 @@ export default function XPLocalBuilder() {
                 className="w-full bg-transparent text-2xl font-black italic outline-none p-2 placeholder:text-foreground/10"
               />
             </div>
+
             <div className="space-y-3">
               {TASK_REGISTRY.map((t) => {
                 const isSel = formData.selectedTasks.includes(t.id);
-                const linkValue = formData.taskLinks[t.id] || "";
-                const isUrlValid = isValidUrl(linkValue);
                 return (
                   <div
                     key={t.id}
                     className={`p-4 rounded-[2rem] border-2 transition-all ${
                       isSel
-                        ? "border-accent bg-surface shadow-sm"
+                        ? "border-accent bg-surface"
                         : "border-transparent bg-muted/50"
                     }`}
                   >
@@ -356,10 +307,8 @@ export default function XPLocalBuilder() {
                       >
                         {t.icon}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm truncate">
-                          {t.label}
-                        </div>
+                      <div className="flex-1">
+                        <div className="font-bold text-sm">{t.label}</div>
                         <div className="text-[10px] font-black text-primary uppercase tracking-widest">
                           {t.desc}
                         </div>
@@ -369,46 +318,21 @@ export default function XPLocalBuilder() {
                       )}
                     </button>
                     {t.requiresLink && isSel && (
-                      <div className="mt-4 relative">
-                        <div className="flex justify-between items-center mb-1 ml-1">
-                          <span
-                            className={`text-[9px] font-black uppercase ${
-                              linkValue && !isUrlValid
-                                ? "text-red-500"
-                                : "text-primary"
-                            }`}
-                          >
-                            {linkValue && !isUrlValid
-                              ? "Invalid HTTPS URL"
-                              : "Enter Task URL"}
-                          </span>
-                          {linkValue &&
-                            (isUrlValid ? (
-                              <Check size={14} className="text-green-500" />
-                            ) : (
-                              <AlertCircle size={14} className="text-red-500" />
-                            ))}
-                        </div>
-                        <input
-                          type="url"
-                          placeholder={t.placeholder}
-                          value={linkValue}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              taskLinks: {
-                                ...formData.taskLinks,
-                                [t.id]: e.target.value,
-                              },
-                            })
-                          }
-                          className={`w-full p-3 rounded-xl text-[11px] font-bold border outline-none transition-all ${
-                            linkValue && !isUrlValid
-                              ? "border-red-500/20 bg-red-500/5 focus:border-red-500"
-                              : "border-border bg-background focus:border-primary"
-                          }`}
-                        />
-                      </div>
+                      <input
+                        type="url"
+                        placeholder={t.placeholder}
+                        value={formData.taskLinks[t.id] || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            taskLinks: {
+                              ...formData.taskLinks,
+                              [t.id]: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full mt-4 p-3 rounded-xl text-[11px] font-bold border border-border bg-background outline-none focus:border-primary"
+                      />
                     )}
                   </div>
                 );
@@ -431,25 +355,6 @@ export default function XPLocalBuilder() {
                     : "border-red-500/20 border-dashed"
                 }`}
               >
-                {/* Remove Button (Only if > 1) */}
-                {formData.rewardCatalog.length > 1 && (
-                  <button
-                    onClick={() => removeReward(item.id)}
-                    className="absolute -top-2 -right-2 p-2 bg-red-500 text-white rounded-full shadow-lg active:scale-90 transition-transform"
-                  >
-                    <X size={14} strokeWidth={3} />
-                  </button>
-                )}
-
-                {!item.promoId && (
-                  <div className="flex items-center gap-2 mb-3 text-red-500">
-                    <AlertCircle size={14} />
-                    <span className="text-[9px] font-black uppercase tracking-widest">
-                      Action Required: Select Preset
-                    </span>
-                  </div>
-                )}
-
                 <div className="flex flex-wrap gap-2 mb-4">
                   {REWARD_PRESETS.map((p) => (
                     <button
@@ -481,31 +386,43 @@ export default function XPLocalBuilder() {
                   ))}
                 </div>
                 {item.type === "free_item" && (
-                  <div className="flex items-center gap-2 bg-background p-3 rounded-2xl border border-border focus-within:border-primary transition-all">
-                    <Tag size={14} className="text-primary" />
-                    <input
-                      type="text"
-                      placeholder="Item Name (e.g. Latte)"
-                      value={item.itemName || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          rewardCatalog: formData.rewardCatalog.map((r) =>
-                            r.id === item.id
-                              ? { ...r, itemName: e.target.value }
-                              : r
-                          ),
-                        })
-                      }
-                      className="bg-transparent text-[11px] font-bold outline-none flex-1 placeholder:text-foreground/20"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="Item Name (e.g. Latte)"
+                    value={item.itemName || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        rewardCatalog: formData.rewardCatalog.map((r) =>
+                          r.id === item.id
+                            ? { ...r, itemName: e.target.value }
+                            : r
+                        ),
+                      })
+                    }
+                    className="w-full bg-background p-3 rounded-2xl border border-border text-[11px] font-bold outline-none"
+                  />
                 )}
               </div>
             ))}
             <button
-              onClick={addReward}
-              className="w-full py-6 border-4 border-dashed rounded-[2.5rem] border-border text-foreground/20 font-black uppercase text-[10px] tracking-widest hover:border-primary transition-all"
+              onClick={() =>
+                setFormData({
+                  ...formData,
+                  rewardCatalog: [
+                    ...formData.rewardCatalog,
+                    {
+                      id: Date.now().toString(),
+                      promoId: "",
+                      label: "",
+                      xpCost: 0,
+                      itemName: "",
+                      type: "",
+                    },
+                  ],
+                })
+              }
+              className="w-full py-6 border-4 border-dashed rounded-[2.5rem] border-border text-foreground/20 font-black uppercase text-[10px] tracking-widest"
             >
               + Add Reward
             </button>
@@ -513,16 +430,16 @@ export default function XPLocalBuilder() {
         )}
 
         {step === 3 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+          <div className="space-y-6 text-center animate-in fade-in">
             {!qrUrl ? (
-              <div className="bg-foreground p-12 rounded-[3.5rem] text-background shadow-2xl space-y-8 relative overflow-hidden">
+              <div className="bg-foreground p-12 rounded-[3.5rem] text-background space-y-8">
                 <h2 className="text-4xl font-black italic tracking-tighter leading-none">
                   Deploy <br /> <span className="text-accent">Economy.</span>
                 </h2>
                 <button
                   onClick={launchEconomy}
                   disabled={isLaunching}
-                  className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
+                  className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black uppercase flex items-center justify-center gap-3 active:scale-95 transition-all"
                 >
                   {isLaunching ? (
                     <Loader2 className="animate-spin" />
@@ -533,10 +450,7 @@ export default function XPLocalBuilder() {
                 </button>
               </div>
             ) : (
-              <div className="bg-surface p-10 rounded-[3.5rem] border border-border shadow-2xl text-center space-y-8">
-                <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-black mx-auto mb-4">
-                  <CheckCircle2 size={24} />
-                </div>
+              <div className="bg-surface p-10 rounded-[3.5rem] border border-border shadow-2xl space-y-8">
                 <h2 className="text-3xl font-black italic tracking-tighter uppercase">
                   Platform <span className="text-primary">Live.</span>
                 </h2>
@@ -545,54 +459,42 @@ export default function XPLocalBuilder() {
                     id="venue-qr"
                     value={qrUrl}
                     size={200}
-                    includeMargin={true}
                     fgColor="#000"
                   />
                 </div>
-                <div className="grid gap-3 ">
-                  <button
-                    onClick={downloadQR}
-                    className="w-full py-5 bg-foreground text-background rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3"
-                  >
-                    <Download size={18} /> Download QR
-                  </button>
-                  <button
-                    onClick={() => router.push("/owner")}
-                    className="w-full py-5 border-2 border-border rounded-2xl font-black uppercase tracking-widest text-foreground/40 hover:bg-muted transition-all"
-                  >
-                    Go to Dashboard <ArrowRight size={18} />
-                  </button>
-                </div>
+                <button
+                  onClick={() => router.push("/owner")}
+                  className="w-full py-5 bg-foreground text-background rounded-2xl font-black uppercase tracking-widest"
+                >
+                  Go to Dashboard{" "}
+                  <ArrowRight size={18} className="inline ml-2" />
+                </button>
               </div>
             )}
           </div>
         )}
 
         {/* Footer Nav */}
-        <div className="mt-12 flex justify-between p-3 bg-surface/60 backdrop-blur-md rounded-[2rem] shadow-xl border border-border">
-          <button
-            onClick={() => setStep((s) => s - 1)}
-            disabled={step === 1 || !!qrUrl}
-            className="px-6 py-3 text-[10px] font-black uppercase text-foreground/40 disabled:opacity-0"
-          >
-            Back
-          </button>
-          {step < 3 && (
+        {!qrUrl && (
+          <div className="mt-12 flex justify-between p-3 bg-surface/60 backdrop-blur-md rounded-[2rem] border border-border">
             <button
-              onClick={() => setStep((s) => s + 1)}
-              disabled={
-                step === 1
-                  ? !isStep1Valid()
-                  : step === 2
-                  ? !isStep2Valid()
-                  : false
-              }
-              className="px-10 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-lg disabled:opacity-40 transition-all"
+              onClick={() => setStep((s) => s - 1)}
+              disabled={step === 1}
+              className="px-6 py-3 text-[10px] font-black uppercase text-foreground/40 disabled:opacity-0"
             >
-              Next
+              Back
             </button>
-          )}
-        </div>
+            {step < 3 && (
+              <button
+                onClick={() => setStep((s) => s + 1)}
+                disabled={step === 1 ? !isStep1Valid() : !isStep2Valid()}
+                className="px-10 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-lg disabled:opacity-40 transition-all"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
