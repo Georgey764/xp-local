@@ -32,13 +32,7 @@ export default function RedeemPage() {
     try {
       const { data: redemption, error: fetchError } = await supabase
         .from("redemptions")
-        .select(
-          `
-          *, 
-          rewards(label, cost), 
-          venues!inner(owner_id)
-        `
-        )
+        .select(`*, rewards(label, cost), venues!inner(owner_id)`)
         .eq("code", inputCode)
         .eq("venues.owner_id", user.id)
         .maybeSingle();
@@ -52,12 +46,8 @@ export default function RedeemPage() {
 
       const { error: updateError } = await supabase
         .from("redemptions")
-        .update({
-          status: "inactive",
-          redeemed_at: now,
-        })
-        .eq("id", redemption.id)
-        .select();
+        .update({ status: "inactive", redeemed_at: now })
+        .eq("id", redemption.id);
 
       if (updateError) throw new Error("Failed to process redemption.");
 
@@ -82,31 +72,33 @@ export default function RedeemPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-10 px-6 min-h-full bg-background font-sans antialiased text-foreground">
+    /* Force white background and black text - No defaults */
+    <div className="max-w-md mx-auto py-10 px-6 min-h-screen bg-white font-sans antialiased text-black">
       <header className="text-center mb-12 space-y-2">
-        <div className="w-16 h-16 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl bg-surface border border-border">
+        <div className="w-16 h-16 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg bg-white border border-neutral-100">
           <ShieldCheck size={32} />
         </div>
-        <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
+        <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none text-black">
           Verify <span className="text-primary">XP.</span>
         </h1>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">
-          Secure Redemption Portal
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/30">
+          Staff Terminal
         </p>
       </header>
 
       <form onSubmit={handleVerify} className="space-y-6">
         <div className="relative group">
+          {/* Forced light-mode input styling */}
           <input
             type="text"
             maxLength={6}
             placeholder="000000"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            className="w-full bg-muted/10 rounded-[2rem] px-8 py-8 text-4xl font-mono font-black tracking-[0.3em] text-center outline-none border-2 border-border focus:border-primary focus:bg-surface transition-all shadow-inner uppercase text-foreground placeholder:text-foreground/10"
+            className="w-full bg-neutral-50 rounded-[2rem] px-8 py-8 text-4xl font-mono font-black tracking-[0.3em] text-center outline-none border-2 border-neutral-100 focus:border-primary focus:bg-white transition-all shadow-inner uppercase text-black placeholder:text-black/5"
           />
-          <div className="absolute top-4 right-6 opacity-10 group-focus-within:opacity-30 transition-opacity">
-            <Zap size={20} />
+          <div className="absolute top-4 right-6 text-primary opacity-20">
+            <Zap size={20} fill="currentColor" />
           </div>
         </div>
 
@@ -114,8 +106,8 @@ export default function RedeemPage() {
           <div
             className={`flex items-center gap-3 p-5 rounded-[1.5rem] border ${
               message.type === "success"
-                ? "bg-green-500/10 border-green-500/20 text-green-500"
-                : "bg-red-500/10 border-red-500/20 text-red-500"
+                ? "bg-green-500/5 border-green-500/20 text-green-600"
+                : "bg-red-500/5 border-red-500/20 text-red-600"
             }`}
           >
             {message.type === "success" ? (
@@ -132,7 +124,7 @@ export default function RedeemPage() {
         <button
           type="submit"
           disabled={code.trim().length !== 6 || isVerifying}
-          className="w-full py-6 bg-primary text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-3"
+          className="w-full py-6 bg-black text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl active:scale-95 transition-all disabled:opacity-10 flex items-center justify-center gap-3 cursor-pointer border-none"
         >
           {isVerifying ? (
             <Loader2 className="animate-spin" size={20} />
@@ -143,11 +135,13 @@ export default function RedeemPage() {
       </form>
 
       <footer className="mt-12 text-center">
-        <p className="text-[9px] font-bold uppercase opacity-20 tracking-widest leading-relaxed">
-          Only active & non-expired codes can be redeemed.
+        <p className="text-[9px] font-bold uppercase text-black/20 tracking-widest leading-relaxed">
+          ONLY ACTIVE CODES CAN BE REDEEMED.
           <br />
-          Status becomes{" "}
-          <strong className="text-foreground/60">inactive</strong> immediately.
+          STATUS BECOMES <strong className="text-black/60">
+            INACTIVE
+          </strong>{" "}
+          IMMEDIATELY.
         </p>
       </footer>
     </div>

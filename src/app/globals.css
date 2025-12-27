@@ -47,30 +47,9 @@
 
 /* Base styles to apply the theme variables to the document */
 @layer base {
-  /* Force color scheme to light mode only */
-  :root {
-    color-scheme: light;
-  }
-
   body {
-    background-color: var(--color-background) !important;
-    color: var(--color-foreground) !important;
-    /* This ensures children inherit the forced black color */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Prevent text transparency or graying out in high contrast modes */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  span,
-  div {
-    color: var(--color-foreground);
+    background-color: "#FFFFFF";
+    color: "#000000";
   }
 }
 
